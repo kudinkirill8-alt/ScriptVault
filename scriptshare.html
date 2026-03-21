@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScriptVault — Делись кодом</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --accent: #7c6fff;
+    --accent2: #ff6f91;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --green: #4fffb0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,111,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,111,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow-orb {
+    position: fixed;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb1 { top: -100px; left: -100px; background: rgba(124,111,255,0.12); }
+  .orb2 { bottom: -100px; right: -100px; background: rgba(255,111,145,0.08); }
+
+  /* Header */
+  header {
+    position: relative; z-index: 10;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    background: rgba(10,10,15,0.8);
+    position: sticky; top: 0;
+  }
+
+  .logo {
+    font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo span { color: var(--green); -webkit-text-fill-color: var(--green); }
+
+  .header-actions { display: flex; gap: 12px; align-items: center; }
+
+  .btn {
+    padding: 9px 20px;
+    border-radius: 8px;
+    border: none; cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 0.85rem;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #9585ff; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,111,255,0.4); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Main layout */
+  main {
+    position: relative; z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 60px 0 50px;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border: 1px solid rgba(124,111,255,0.4);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 460px;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+  }
+
+  /* Search */
+  .search-bar {
+    display: flex;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto 50px;
+  }
+
+  .search-bar input {
+    flex: 1;
+    padding: 12px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-bar input:focus { border-color: var(--accent); }
+  .search-bar input::placeholder { color: var(--muted); }
+
+  /* Stats */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 1.8rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .section-title::before {
+    content: '';
+    width: 3px; height: 18px;
+    background: linear-gradient(var(--accent), var(--accent2));
+    border-radius: 2px;
+    display: block;
+  }
+
+  /* Cards grid */
+  .scripts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .script-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.25s;
+    cursor: pointer;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .script-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(124,111,255,0.15);
+  }
+
+  .card-header {
+    padding: 16px 18px 12px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px;
+  }
+
+  .card-title {
+    font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+
+  .card-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  .lang-badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .lang-lua { background: rgba(0,162,255,0.15); color: #00a2ff; border: 1px solid rgba(0,162,255,0.3); }
+  .lang-python { background: rgba(255,212,59,0.15); color: #ffd43b; border: 1px solid rgba(255,212,59,0.3); }
+  .lang-javascript { background: rgba(255,212,59,0.15); color: #f7df1e; border: 1px solid rgba(247,223,30,0.3); }
+  .lang-bash { background: rgba(79,255,176,0.15); color: var(--green); border: 1px solid rgba(79,255,176,0.3); }
+  .lang-other { background: rgba(124,111,255,0.15); color: var(--accent); border: 1px solid rgba(124,111,255,0.3); }
+
+  .card-code {
+    margin: 0 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.78rem;
+    max-height: 120px;
+    overflow-y: hidden;
+    position: relative;
+  }
+
+  .card-code::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(transparent, var(--card));
+  }
+
+  .card-code pre { margin: 0; }
+  .card-code code { border-radius: 8px; }
+
+  .card-footer {
+    padding: 12px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .card-meta {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .copy-btn {
+    padding: 5px 14px;
+    background: rgba(124,111,255,0.1);
+    border: 1px solid rgba(124,111,255,0.3);
+    border-radius: 6px;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { background: rgba(124,111,255,0.2); }
+  .copy-btn.copied { color: var(--green); border-color: rgba(79,255,176,0.3); background: rgba(79,255,176,0.1); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 24px 24px 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .modal-title { font-size: 1.1rem; font-weight: 800; }
+
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--accent); }
+
+  .modal-body { padding: 24px; }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+
+  .form-textarea {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    min-height: 180px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .form-select option { background: var(--surface); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .modal-footer {
+    padding: 0 24px 24px;
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    display: none;
+  }
+  .empty-state.visible { display: block; }
+  .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    padding: 12px 20px;
+    background: var(--green);
+    color: #000;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    z-index: 200;
+    transform: translateY(60px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* View modal */
+  .view-modal .view-code {
+    margin: 16px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .view-modal .view-code pre { margin: 0; }
+
+  .no-scripts { display: none; }
+
+  @media (max-width: 600px) {
+    header { padding: 16px 20px; }
+    .logo { font-size: 1.1rem; }
+    main { padding: 24px 16px; }
+    .hero { padding: 30px 0 30px; }
+    .form-row { grid-template-columns: 1fr; }
+    .scripts-grid { grid-template-columns: 1fr; }
+    .stats { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-orb orb1"></div>
+<div class="glow-orb orb2"></div>
+
+<header>
+  <div class="logo">Script<span>Vault</span></div>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="openUploadModal()">+ Добавить скрипт</button>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="hero-badge">🔥 Открытая платформа</div>
+    <h1>Делись <em>скриптами</em><br>с сообществом</h1>
+    <p>Публикуй свои скрипты, находи полезный код и учись у других разработчиков.</p>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Поиск скриптов..." oninput="filterScripts()">
+      <button class="btn btn-ghost" onclick="filterScripts()">🔍</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number" id="totalCount">0</div>
+      <div class="stat-label">Скриптов</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" id="langCount">0</div>
+      <div class="stat-label">Языков</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" id="copyCount">0</div>
+      <div class="stat-label">Копирований</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Все скрипты</div>
+    <select class="form-select" style="width:auto;padding:7px 12px;font-size:0.8rem;" onchange="filterByLang(this.value)">
+      <option value="">Все языки</option>
+      <option value="lua">Lua</option>
+      <option value="python">Python</option>
+      <option value="javascript">JavaScript</option>
+      <option value="bash">Bash</option>
+      <option value="other">Другое</option>
+    </select>
+  </div>
+
+  <div class="scripts-grid" id="scriptsGrid"></div>
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">📭</div>
+    <div>Скриптов пока нет. Будь первым!</div>
+  </div>
+</main>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Добавить скрипт</div>
+      <button class="modal-close" onclick="closeUploadModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Название *</label>
+          <input type="text" class="form-input" id="scriptName" placeholder="Мой крутой скрипт">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Язык *</label>
+          <select class="form-select" id="scriptLang">
+            <option value="lua">Lua</option>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="bash">Bash</option>
+            <option value="other">Другое</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Описание</label>
+        <input type="text" class="form-input" id="scriptDesc" placeholder="Что делает этот скрипт?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Код *</label>
+        <textarea class="form-textarea" id="scriptCode" placeholder="-- Вставь свой код сюда..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Автор</label>
+        <input type="text" class="form-input" id="scriptAuthor" placeholder="Аноним">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeUploadModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="submitScript()">Опубликовать</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal-overlay view-modal" id="viewModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="viewTitle"></div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px" id="viewMeta"></div>
+      </div>
+      <button class="modal-close" onclick="closeViewModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="viewDesc" style="color:var(--muted);font-size:0.85rem;margin-bottom:14px;"></div>
+      <div class="view-code">
+        <pre><code id="viewCode"></code></pre>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeViewModal()">Закрыть</button>
+      <button class="btn btn-primary" onclick="copyViewCode()">📋 Копировать</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let scripts = JSON.parse(localStorage.getItem('sv_scripts') || '[]');
+let copyCount = parseInt(localStorage.getItem('sv_copies') || '0');
+let currentFilter = '';
+let currentSearch = '';
+let currentViewCode = '';
+
+// Default scripts
+if (scripts.length === 0) {
+  scripts = [
+    {
+      id: 1,
+      name: 'Лидерборд для Roblox',
+      lang: 'lua',
+      desc: 'Простой скрипт лидерборда с очками игроков',
+      code: `game.Players.PlayerAdded:Connect(function(player)
+    local leaderstats = Instance.new("Folder")
+    leaderstats.Name = "leaderstats"
+    leaderstats.Parent = player
+    
+    local points = Instance.new("IntValue")
+    points.Name = "Points"
+    points.Value = 0
+    points.Parent = leaderstats
+end)`,
+      author: 'Admin',
+      date: new Date().toLocaleDateString('ru-RU'),
+    },
+    {
+      id: 2,
+      name: 'Авто-кликер на Python',
+      lang: 'python',
+      desc: 'Простой авто-кликер используя pyautogui',
+      code: `import pyautogui
+import time
+
+print("Запуск через 3 секунды...")
+time.sleep(3)
+
+for i in range(100):
+    pyautogui.click()
+    time.sleep(0.1)
+    
+print("Готово!")`,
+      author: 'Аноним',
+      date: new Date().toLocaleDateString('ru-RU'),
+    },
+    {
+      id: 3,
+      name: 'Таймер обратного отсчёта',
+      lang: 'javascript',
+      desc: 'Красивый таймер обратного отсчёта для сайта',
+      code: `function countdown(seconds) {
+  let remaining = seconds;
+  
+  const interval = setInterval(() => {
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    console.log(\`\${mins}:\${secs.toString().padStart(2,'0')}\`);
+    
+    if (--remaining < 0) {
+      clearInterval(interval);
+      console.log("Время вышло!");
+    }
+  }, 1000);
+}
+
+countdown(60);`,
+      author: 'Dev',
+      date: new Date().toLocaleDateString('ru-RU'),
+    }
+  ];
+  save();
+}
+
+function save() {
+  localStorage.setItem('sv_scripts', JSON.stringify(scripts));
+  localStorage.setItem('sv_copies', copyCount);
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('totalCount').textContent = scripts.length;
+  const langs = new Set(scripts.map(s => s.lang));
+  document.getElementById('langCount').textContent = langs.size;
+  document.getElementById('copyCount').textContent = copyCount;
+}
+
+function getLangClass(lang) {
+  const map = { lua: 'lang-lua', python: 'lang-python', javascript: 'lang-javascript', bash: 'lang-bash' };
+  return map[lang] || 'lang-other';
+}
+
+function getLangLabel(lang) {
+  const map = { lua: 'Lua', python: 'Python', javascript: 'JS', bash: 'Bash', other: 'Other' };
+  return map[lang] || lang;
+}
+
+function getHljsLang(lang) {
+  const map = { lua: 'lua', python: 'python', javascript: 'javascript', bash: 'bash' };
+  return map[lang] || 'plaintext';
+}
+
+function renderScripts() {
+  const grid = document.getElementById('scriptsGrid');
+  const empty = document.getElementById('emptyState');
+  
+  let filtered = scripts.filter(s => {
+    const matchLang = !currentFilter || s.lang === currentFilter;
+    const matchSearch = !currentSearch || 
+      s.name.toLowerCase().includes(currentSearch) || 
+      s.desc.toLowerCase().includes(currentSearch) ||
+      s.author.toLowerCase().includes(currentSearch);
+    return matchLang && matchSearch;
+  });
+
+  grid.innerHTML = '';
+
+  if (filtered.length === 0) {
+    empty.classList.add('visible');
+  } else {
+    empty.classList.remove('visible');
+    filtered.forEach((s, i) => {
+      const card = document.createElement('div');
+      card.className = 'script-card';
+      card.style.animationDelay = (i * 0.06) + 's';
+      
+      const highlighted = hljs.highlight(s.code, { language: getHljsLang(s.lang) }).value;
+      
+      card.innerHTML = `
+        <div class="card-header" onclick="openViewModal(${s.id})">
+          <div>
+            <div class="card-title">${escHtml(s.name)}</div>
+            <div class="card-desc">${escHtml(s.desc || 'Без описания')}</div>
+          </div>
+          <span class="lang-badge ${getLangClass(s.lang)}">${getLangLabel(s.lang)}</span>
+        </div>
+        <div class="card-code" onclick="openViewModal(${s.id})">
+          <pre><code class="hljs">${highlighted}</code></pre>
+        </div>
+        <div class="card-footer">
+          <div class="card-meta">
+            <span>👤 ${escHtml(s.author || 'Аноним')}</span>
+            <span>${s.date}</span>
+          </div>
+          <button class="copy-btn" onclick="copyScript(event, ${s.id}, this)">Копировать</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  updateStats();
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function copyScript(e, id, btn) {
+  e.stopPropagation();
+  const s = scripts.find(x => x.id === id);
+  if (!s) return;
+  navigator.clipboard.writeText(s.code).then(() => {
+    btn.textContent = '✓ Скопировано';
+    btn.classList.add('copied');
+    copyCount++;
+    save();
+    setTimeout(() => { btn.textContent = 'Копировать'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyViewCode() {
+  navigator.clipboard.writeText(currentViewCode).then(() => {
+    showToast('Скопировано!');
+    copyCount++;
+    save();
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function filterScripts() {
+  currentSearch = document.getElementById('searchInput').value.toLowerCase();
+  renderScripts();
+}
+
+function filterByLang(val) {
+  currentFilter = val;
+  renderScripts();
+}
+
+function openUploadModal() {
+  document.getElementById('uploadModal').classList.add('active');
+}
+
+function closeUploadModal() {
+  document.getElementById('uploadModal').classList.remove('active');
+  ['scriptName','scriptDesc','scriptCode','scriptAuthor'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function submitScript() {
+  const name = document.getElementById('scriptName').value.trim();
+  const code = document.getElementById('scriptCode').value.trim();
+  const lang = document.getElementById('scriptLang').value;
+  const desc = document.getElementById('scriptDesc').value.trim();
+  const author = document.getElementById('scriptAuthor').value.trim() || 'Аноним';
+
+  if (!name) { showToast('⚠️ Введи название!'); return; }
+  if (!code) { showToast('⚠️ Введи код!'); return; }
+
+  const newScript = {
+    id: Date.now(),
+    name, lang, desc, code, author,
+    date: new Date().toLocaleDateString('ru-RU')
+  };
+
+  scripts.unshift(newScript);
+  save();
+  closeUploadModal();
+  renderScripts();
+  showToast('✅ Скрипт опубликован!');
+}
+
+function openViewModal(id) {
+  const s = scripts.find(x => x.id === id);
+  if (!s) return;
+  currentViewCode = s.code;
+  document.getElementById('viewTitle').textContent = s.name;
+  document.getElementById('viewMeta').textContent = `👤 ${s.author} · ${s.date} · ${getLangLabel(s.lang)}`;
+  document.getElementById('viewDesc').textContent = s.desc || '';
+  const codeEl = document.getElementById('viewCode');
+  codeEl.className = `language-${getHljsLang(s.lang)}`;
+  codeEl.textContent = s.code;
+  hljs.highlightElement(codeEl);
+  document.getElementById('viewModal').classList.add('active');
+}
+
+function closeViewModal() {
+  document.getElementById('viewModal').classList.remove('active');
+}
+
+// Close on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+});
+
+renderScripts();
+</script>
+</body>
+</html>
